@@ -4,7 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.example.urlshortner.dto.ShortenResponse;
+import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import com.example.urlshortner.util.Base62Converter;
 
 import com.example.urlshortner.model.UrlMapping;
 import com.example.urlshortner.repository.UrlRepository;
@@ -22,51 +27,41 @@ public class UrlService {
         return repo.findAll();
     }
 
-    public String shorten(
-            String url
-    ) {
+    @Transactional
+    public ShortenResponse shorten(String url) {
 
         url = url.replace("\"", "");
-        if (!isValidUrl(url)){
+
+        if (!isValidUrl(url)) {
             throw new InvalidURLException("Invalid URL");
         }
 
-        Optional<UrlMapping> existing =
-                repo.findByOriginalUrl(
-                        url
-                );
-
+        Optional<UrlMapping> existing = repo.findByOriginalUrl(url);
         if (existing.isPresent()) {
-            return existing
-                    .get()
-                    .getShortCode();
+            UrlMapping map = existing.get();
+            return new ShortenResponse(
+                    map.getOriginalUrl(),
+                    map.getShortCode(),
+                    "http://localhost:8081/" + map.getShortCode()
+            );
         }
 
-        String code = UUID.randomUUID().toString().substring(0, 6);
-
         UrlMapping map = new UrlMapping();
-
         map.setOriginalUrl(url);
+        map.setShortCode("PENDING");
 
-        map.setShortCode(code);
+        UrlMapping savedPlaceholder = repo.save(map);
 
-        repo.save(map);
+        String code = Base62Converter.encode(savedPlaceholder.getId());
 
-        return code;
+        savedPlaceholder.setShortCode(code);
+        UrlMapping finalSaved = repo.save(savedPlaceholder);
 
-    }
-
-    public String getOriginalUrl(
-            String code
-    ){
-
-        return repo
-                .findByShortCode(code)
-                .orElseThrow(
-                        () -> new RuntimeException("Short Url not found")
-                )
-                .getOriginalUrl();
-
+        return new ShortenResponse(
+                finalSaved.getOriginalUrl(),
+                finalSaved.getShortCode(),
+                "http://localhost:8081/" + finalSaved.getShortCode()
+        );
     }
 
     public String redirect(String code){
@@ -87,6 +82,13 @@ public class UrlService {
                 .orElseThrow()
                 .getClicks();
 
+    }
+    @Cacheable(value = "urls", key = "#code")
+    public String getOriginalUrl(String code) {
+        System.out.println("DB called");
+        return repo.findByShortCode(code)
+                .orElseThrow(() -> new RuntimeException("Short Url not found"))
+                .getOriginalUrl();
     }
 
 

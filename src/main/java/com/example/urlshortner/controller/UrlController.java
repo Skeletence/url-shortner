@@ -1,5 +1,7 @@
 package com.example.urlshortner.controller;
 
+import com.example.urlshortner.dto.ShortenRequest;
+import com.example.urlshortner.dto.ShortenResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,11 +26,11 @@ public class UrlController {
         this.service = service;
     }
     @PostMapping("/shorten")
-    public String shorten(
-            @RequestBody String url
+    public ShortenResponse shorten(
+            @RequestBody ShortenRequest request
     ){
-        String code = service.shorten(url);
-        return "http://localhost:8081/" + code;
+        return service.shorten(request.getUrl());
+
 
     }
 
@@ -41,7 +43,7 @@ public class UrlController {
                 service.redirect(code);
 
         return ResponseEntity
-                .status(302)
+                .status(301)
                 .header(
                         "Location",
                         url
