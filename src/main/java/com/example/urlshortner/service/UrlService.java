@@ -1,5 +1,6 @@
 package com.example.urlshortner.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -85,10 +86,16 @@ public class UrlService {
     }
     @Cacheable(value = "urls", key = "#code")
     public String getOriginalUrl(String code) {
-        System.out.println("DB called");
-        return repo.findByShortCode(code)
-                .orElseThrow(() -> new RuntimeException("Short Url not found"))
-                .getOriginalUrl();
+        System.out.println("DB queried");
+
+        UrlMapping mapping = repo.findByShortCode(code)
+                .orElseThrow(() -> new RuntimeException("Short Url not found"));
+
+        if (LocalDateTime.now().isAfter(mapping.getExpiresAt())) {
+            throw new RuntimeException("This short link has expired!");
+        }
+
+        return mapping.getOriginalUrl();
     }
 
 

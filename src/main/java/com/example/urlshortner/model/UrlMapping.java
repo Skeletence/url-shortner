@@ -2,6 +2,8 @@ package com.example.urlshortner.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(
         name = "url_mappings",
@@ -22,6 +24,16 @@ public class UrlMapping {
     @Column(nullable = false)
     private int clicks = 0;
 
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt = LocalDateTime.now().plusDays(1); // 👈 Auto-sets to tomorrow
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
     // Getters and Setters
     public Long getId() {
         return id;

@@ -1,5 +1,6 @@
 package com.example.urlshortner.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,5 +18,7 @@ public interface UrlRepository
     Optional<UrlMapping> findByOriginalUrl(
             String originalUrl
     );
+    void deleteByExpiresAtBefore(LocalDateTime dateTime);
 
 }
+
