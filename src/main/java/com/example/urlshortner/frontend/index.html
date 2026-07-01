@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; text-align: center; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 20px; background-color: #007BFF; color: #ffffff; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        #result { margin-top: 20px; font-weight: bold; }
+        a { color: #007BFF; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<h2>Link Shortener</h2>
+<p>Paste your long URL below:</p>
+
+<input type="url" id="longUrl" placeholder="https://example.com/very/long/link" required>
+<br>
+<button onclick="shortenLink()">Shorten URL</button>
+
+<div id="result"></div>
+
+<script>
+    async function shortenLink() {
+        const longUrlInput = document.getElementById('longUrl').value;
+        const resultDiv = document.getElementById('result');
+
+        if (!longUrlInput) {
+            resultDiv.innerText = "Please enter a valid URL.";
+            return;
+        }
+
+        resultDiv.innerText = "Shortening...";
+
+        try {
+            const backendUrl = 'http://localhost:8081/shorten';
+
+            const response = await fetch(backendUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: longUrlInput })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                resultDiv.innerHTML = `Success! Your link: <br><a href="${data.shortUrl}" target="_blank">${data.shortUrl}</a>`;
+            } else {
+                resultDiv.innerText = "Error: Invalid Link";
+            }
+        } catch (error) {
+            resultDiv.innerText = "Could not connect to the backend server.";
+            console.error(error);
+        }
+    }
+</script>
+</body>
+</html>

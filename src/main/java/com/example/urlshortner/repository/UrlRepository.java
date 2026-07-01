@@ -18,7 +18,6 @@ public interface UrlRepository
     Optional<UrlMapping> findByOriginalUrl(
             String originalUrl
     );
-    void deleteByExpiresAtBefore(LocalDateTime dateTime);
 
 }
 

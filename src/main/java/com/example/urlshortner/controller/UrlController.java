@@ -9,6 +9,7 @@ import com.example.urlshortner.service.UrlService;
 
 import java.util.List;
 
+@CrossOrigin(origins ="*")
 @RestController
 public class UrlController {
     @GetMapping("/links")

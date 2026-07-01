@@ -91,12 +91,10 @@ public class UrlService {
         UrlMapping mapping = repo.findByShortCode(code)
                 .orElseThrow(() -> new RuntimeException("Short Url not found"));
 
-        if (LocalDateTime.now().isAfter(mapping.getExpiresAt())) {
-            throw new RuntimeException("This short link has expired!");
-        }
 
         return mapping.getOriginalUrl();
     }
+
 
 
 
